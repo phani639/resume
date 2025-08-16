@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resume Builder — Single File (Multiple Templates)</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Boxicons -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <!-- Google Fonts default -->
+  <link id="font-roboto" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{ --accent:#0d6efd; --bg:#ffffff; --muted:#6c757d; --radius:12px; }
+    *{box-sizing:border-box}
+    body{font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:#f5f7fb;}
+    .app-shell{min-height:100vh; display:flex; gap:1rem; padding:1rem;}
+    .sidebar{width:360px; max-width:40%;}
+    .editor{flex:1;}
+    .panel{background:var(--bg); border-radius:var(--radius); box-shadow:0 6px 18px rgba(20,30,50,.06); padding:1rem}
+
+    /* preview container */
+    .resume-wrap{max-width:900px; margin:1rem auto; background:var(--bg); border-radius:10px; padding:2rem; box-shadow:0 6px 30px rgba(20,30,50,.08)}
+    .resume-header{display:flex; gap:1rem; align-items:center}
+    .avatar{width:110px; height:110px; border-radius:12px; object-fit:cover; border:3px solid var(--accent)}
+    .name{font-size:1.6rem; font-weight:700}
+    .title{color:var(--muted)}
+    .meta{display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:.5rem; color:var(--muted); align-items:center}
+
+    .section{margin-top:1.25rem}
+    .section h5{font-weight:700; margin-bottom:.5rem}
+    .job{margin-bottom:.6rem}
+
+    .chip{display:inline-flex; gap:.4rem; align-items:center; padding:.25rem .6rem; border-radius:999px; background:#f1f4ff; color:var(--accent); font-weight:600; font-size:.85rem}
+    .contact-item{display:inline-flex; gap:.5rem; align-items:center; padding:.25rem .6rem; border-radius:8px; background:#f8f9fb; color:var(--muted); font-size:.92rem}
+
+    /* skills list */
+    .skills{display:flex; gap:.4rem; flex-wrap:wrap}
+    .skill-pill{background:#f7f9ff; padding:.4rem .6rem; border-radius:999px; font-weight:600}
+
+    /* languages list */
+    .lang-list{display:flex; gap:.5rem; flex-wrap:wrap}
+    .lang-item{background:#fff7f1; padding:.3rem .6rem; border-radius:8px; font-weight:600; color: #7a4a00}
+
+    /* Templates: sidebar layout */
+    .template-sidebar .resume-wrap{display:grid; grid-template-columns: 260px 1fr; gap:1.5rem; max-width:1000px}
+    .template-sidebar .left{padding:1rem; border-right:1px solid #f1f3f6}
+    .template-sidebar .right{padding:1rem}
+    .template-sidebar .avatar{width:120px; height:120px}
+
+    /* Two column layout */
+    .template-twocol .resume-wrap{display:grid; grid-template-columns: 1fr 330px; gap:1.5rem; max-width:1000px}
+    .template-twocol .leftcol{padding:1rem}
+    .template-twocol .rightcol{padding:1rem; border-left:1px solid #f1f3f6}
+
+    /* classic tweaks */
+    .template-classic .name{font-family:'Times New Roman', serif; font-size:1.8rem}
+
+    @media (max-width: 900px){ .sidebar{display:none} .resume-wrap{padding:1rem; display:block !important} }
+
+    .muted-small{color:var(--muted); font-size:.95rem}
+    .small-muted{color:var(--muted); font-size:.88rem}
+
+    /* utilities */
+    .section-divider{height:1px; background:#f1f3f6; margin:1rem 0}
+  </style>
+</head>
+<body>
+
+<div class="container-fluid app-shell">
+  <!-- Controls -->
+  <aside class="sidebar panel">
+    <h4 class="mb-3">Resume Builder</h4>
+
+    <div class="mb-3">
+      <label class="form-label">Template</label>
+      <select id="templateSel" class="form-select">
+        <option value="modern">Modern</option>
+        <option value="classic">Classic</option>
+        <option value="sidebar">Sidebar</option>
+        <option value="twocol">Two-column</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Primary Color</label>
+      <input id="accentColor" type="color" class="form-control form-control-color" value="#0d6efd">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Font</label>
+      <select id="fontSel" class="form-select">
+        <option value="Roboto">Roboto</option>
+        <option value="Merriweather">Merriweather</option>
+        <option value="Poppins">Poppins</option>
+        <option value="Inter">Inter</option>
+      </select>
+    </div>
+
+    <hr>
+    <form id="mainForm">
+      <div class="mb-2">
+        <label class="form-label">Full name</label>
+        <input name="name" id="name" class="form-control" placeholder="Jane Doe">
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Job title</label>
+        <input name="title" id="title" class="form-control" placeholder="Frontend Developer">
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label">Photo</label>
+        <input id="photoInput" type="file" accept="image/*" class="form-control">
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label">Email</label>
+        <input name="email" id="email" class="form-control" placeholder="email@example.com">
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Mobile</label>
+        <input name="mobile" id="mobile" class="form-control" placeholder="+91 99999 99999">
+      </div>
+      <div class="mb-2">
+        <label class="form-label">Address</label>
+        <input name="address" id="address" class="form-control" placeholder="City, Country">
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label">Summary</label>
+        <textarea id="summary" rows="3" class="form-control" placeholder="Short summary about you..."></textarea>
+      </div>
+
+      <div class="mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label mb-0">Skills</label>
+          <div>
+            <input id="newSkill" class="form-control form-control-sm d-inline-block" style="width:150px" placeholder="Add skill">
+            <button id="addSkill" type="button" class="btn btn-sm btn-outline-primary ms-1"><i class='bx bx-plus'></i></button>
+          </div>
+        </div>
+        <div id="skills" class="mt-2"></div>
+      </div>
+
+      <div class="mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label mb-0">Languages</label>
+          <div>
+            <input id="newLang" class="form-control form-control-sm d-inline-block" style="width:150px" placeholder="Add language">
+            <button id="addLang" type="button" class="btn btn-sm btn-outline-primary ms-1"><i class='bx bx-plus'></i></button>
+          </div>
+        </div>
+        <div id="languages" class="mt-2"></div>
+        <div class="small-muted mt-1">Preloaded: Telugu, English, Hindi</div>
+      </div>
+
+      <div class="mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label mb-0">Work Experience</label>
+          <button id="addJob" type="button" class="btn btn-sm btn-outline-primary"><i class='bx bx-plus'></i> Add</button>
+        </div>
+        <div id="jobs"></div>
+      </div>
+
+      <div class="mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label mb-0">Education</label>
+          <button id="addEdu" type="button" class="btn btn-sm btn-outline-primary"><i class='bx bx-plus'></i> Add</button>
+        </div>
+        <div id="edus"></div>
+      </div>
+
+      <div class="mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label mb-0">Projects</label>
+          <button id="addProj" type="button" class="btn btn-sm btn-outline-primary"><i class='bx bx-plus'></i> Add</button>
+        </div>
+        <div id="projs"></div>
+      </div>
+
+      <div class="d-grid gap-2 mt-3">
+        <button id="saveBtn" type="button" class="btn btn-primary">Save locally</button>
+        <button id="loadBtn" type="button" class="btn btn-outline-secondary">Load saved</button>
+        <button id="resetBtn" type="button" class="btn btn-outline-danger">Reset</button>
+        <button id="exportPdf" type="button" class="btn btn-success">Export as PDF</button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- Preview -->
+  <main class="editor">
+    <div class="panel">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="mb-0">Live Preview</h5>
+        <div class="small-muted">Multiple templates: Modern, Classic, Sidebar & Two-column</div>
+      </div>
+
+      <div id="preview" class="resume-wrap template-modern">
+        <!-- Modern / Classic single-column default -->
+        <div id="singlePreview">
+          <div class="resume-header">
+            <img id="avatar" class="avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder" alt="avatar">
+            <div style="flex:1">
+              <div class="name" id="p-name">Jane Doe</div>
+              <div class="title" id="p-title">Frontend Developer</div>
+              <div class="meta" id="p-meta"></div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h5>About me</h5>
+            <div id="p-summary" class="muted-small">A concise summary that highlights your experience, strengths and goals.</div>
+          </div>
+
+          <div id="p-jobs-area"></div>
+          <div id="p-edu-area"></div>
+          <div id="p-proj-area"></div>
+          <div class="section">
+            <h5>Skills</h5>
+            <div id="p-skills" class="skills"></div>
+          </div>
+          <div class="section">
+            <h5>Languages</h5>
+            <div id="p-langs" class="lang-list"></div>
+          </div>
+        </div>
+
+        <!-- Sidebar template layout -->
+        <div id="sidebarPreview" style="display:none">
+          <div class="left">
+            <div class="text-center mb-3"><img id="sb-avatar" class="avatar" src="" alt="avatar"></div>
+            <div class="text-center mb-2"><div class="name" id="sb-name">Jane Doe</div><div class="small-muted" id="sb-title">Frontend Developer</div></div>
+            <div class="section-divider"></div>
+            <div class="section"><h6>Contact</h6><div id="sb-meta" class="small-muted"></div></div>
+            <div class="section"><h6>Skills</h6><div id="sb-skills" class="skills"></div></div>
+            <div class="section"><h6>Languages</h6><div id="sb-langs" class="lang-list"></div></div>
+          </div>
+          <div class="right">
+            <div class="section"><h5>Summary</h5><div id="sb-summary" class="muted-small"></div></div>
+            <div id="sb-jobs"></div>
+            <div id="sb-edu"></div>
+            <div id="sb-proj"></div>
+          </div>
+        </div>
+
+        <!-- Two-column preview -->
+        <div id="twocolPreview" style="display:none">
+          <div class="leftcol">
+            <div class="text-center mb-3"><img id="tc-avatar" class="avatar" src="" alt="avatar"></div>
+            <div class="text-center mb-2"><div class="name" id="tc-name">Jane Doe</div><div class="small-muted" id="tc-title">Frontend Developer</div></div>
+            <div class="section"><h6>Skills</h6><div id="tc-skills" class="skills"></div></div>
+            <div class="section"><h6>Languages</h6><div id="tc-langs" class="lang-list"></div></div>
+          </div>
+          <div class="rightcol">
+            <div class="section"><h5>Summary</h5><div id="tc-summary" class="muted-small"></div></div>
+            <div id="tc-jobs"></div>
+            <div id="tc-edu"></div>
+            <div id="tc-proj"></div>
+            <div class="section"><h6>Contact</h6><div id="tc-meta" class="small-muted"></div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Templates for cloning -->
+<template id="jobTpl">
+  <div class="job p-2 border rounded mb-2 bg-light">
+    <div class="d-flex gap-2">
+      <input class="form-control form-control-sm flex-grow-1 job-role" placeholder="Role — Company">
+      <input class="form-control form-control-sm job-duration" placeholder="YYYY - YYYY / Present" style="width:170px">
+      <button class="btn btn-sm btn-outline-danger remove-job" title="Remove"><i class='bx bx-trash'></i></button>
+    </div>
+    <textarea class="form-control form-control-sm mt-2 job-desc" rows="2" placeholder="Short description / achievements"></textarea>
+  </div>
+</template>
+
+<template id="eduTpl">
+  <div class="job p-2 border rounded mb-2 bg-light">
+    <div class="d-flex gap-2">
+      <input class="form-control form-control-sm flex-grow-1 edu-school" placeholder="Degree — Institution">
+      <input class="form-control form-control-sm edu-duration" placeholder="YYYY - YYYY" style="width:170px">
+      <button class="btn btn-sm btn-outline-danger remove-edu" title="Remove"><i class='bx bx-trash'></i></button>
+    </div>
+    <textarea class="form-control form-control-sm mt-2 edu-desc" rows="2" placeholder="Notes / Honors"></textarea>
+  </div>
+</template>
+
+<template id="projTpl">
+  <div class="job p-2 border rounded mb-2 bg-light">
+    <div class="d-flex gap-2">
+      <input class="form-control form-control-sm flex-grow-1 proj-title" placeholder="Project Title">
+      <input class="form-control form-control-sm proj-tech" placeholder="Tech stack (comma separated)" style="width:200px">
+      <button class="btn btn-sm btn-outline-danger remove-proj" title="Remove"><i class='bx bx-trash'></i></button>
+    </div>
+    <textarea class="form-control form-control-sm mt-2 proj-desc" rows="2" placeholder="Short description / link"></textarea>
+  </div>
+</template>
+
+<!-- JS libs -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+<script>
+  // helpers
+  const qs = s => document.querySelector(s);
+  const qsa = s => document.querySelectorAll(s);
+
+  // main elements
+  const templateSel = qs('#templateSel');
+  const preview = qs('#preview');
+  const nameEl = qs('#name');
+  const titleEl = qs('#title');
+  const emailEl = qs('#email');
+  const mobileEl = qs('#mobile');
+  const addressEl = qs('#address');
+  const summaryEl = qs('#summary');
+  const avatar = qs('#avatar');
+  const photoInput = qs('#photoInput');
+  const accentInput = qs('#accentColor');
+  const fontSel = qs('#fontSel');
+
+  // sections containers
+  const jobsContainer = qs('#jobs');
+  const edusContainer = qs('#edus');
+  const projsContainer = qs('#projs');
+  const skillsContainer = qs('#skills');
+  const langsContainer = qs('#languages');
+
+  // preview areas
+  const pJobs = qs('#p-jobs-area');
+  const pEdu = qs('#p-edu-area');
+  const pProj = qs('#p-proj-area');
+  const pSkills = qs('#p-skills');
+  const pLangs = qs('#p-langs');
+  const pMeta = qs('#p-meta');
+  const pName = qs('#p-name');
+  const pTitle = qs('#p-title');
+  const pSummary = qs('#p-summary');
+
+  // sidebar preview elements
+  const sbAvatar = qs('#sb-avatar');
+  const sbName = qs('#sb-name');
+  const sbTitle = qs('#sb-title');
+  const sbMeta = qs('#sb-meta');
+  const sbSummary = qs('#sb-summary');
+  const sbJobs = qs('#sb-jobs');
+  const sbEdu = qs('#sb-edu');
+  const sbProj = qs('#sb-proj');
+  const sbSkills = qs('#sb-skills');
+  const sbLangs = qs('#sb-langs');
+
+  // twocol preview
+  const tcAvatar = qs('#tc-avatar');
+  const tcName = qs('#tc-name');
+  const tcTitle = qs('#tc-title');
+  const tcSummary = qs('#tc-summary');
+  const tcJobs = qs('#tc-jobs');
+  const tcEdu = qs('#tc-edu');
+  const tcProj = qs('#tc-proj');
+  const tcSkills = qs('#tc-skills');
+  const tcLangs = qs('#tc-langs');
+  const tcMeta = qs('#tc-meta');
+
+  // inputs for skills/langs
+  const newSkillInput = qs('#newSkill');
+  const addSkillBtn = qs('#addSkill');
+  const newLangInput = qs('#newLang');
+  const addLangBtn = qs('#addLang');
+
+  // templates visibility
+  const singlePreview = qs('#singlePreview');
+  const sidebarPreview = qs('#sidebarPreview');
+  const twocolPreview = qs('#twocolPreview');
+
+  // load/save
+  function loadState(){
+    const data = JSON.parse(localStorage.getItem('resume_builder_v2') || '{}');
+    if(!Object.keys(data).length) return;
+    nameEl.value = data.name || '';
+    titleEl.value = data.title || '';
+    emailEl.value = data.email || '';
+    mobileEl.value = data.mobile || '';
+    addressEl.value = data.address || '';
+    summaryEl.value = data.summary || '';
+    if(data.avatar) avatar.src = data.avatar;
+    if(data.template) templateSel.value = data.template;
+    if(data.accent) accentInput.value = data.accent;
+    if(data.font) fontSel.value = data.font;
+
+    // clear containers
+    jobsContainer.innerHTML = '';
+    edusContainer.innerHTML = '';
+    projsContainer.innerHTML = '';
+    skillsContainer.innerHTML = '';
+    langsContainer.innerHTML = '';
+
+    (data.skills || []).forEach(s=> addSkill(s));
+    (data.languages || []).forEach(l=> addLang(l));
+    (data.jobs || []).forEach(j=> createJob(j.role, j.duration, j.desc));
+    (data.edus || []).forEach(e=> createEdu(e.school, e.duration, e.desc));
+    (data.projs || []).forEach(p=> createProj(p.title, p.tech, p.desc));
+
+    syncAll();
+  }
+
+  function saveState(){
+    const state = {
+      name: nameEl.value,
+      title: titleEl.value,
+      email: emailEl.value,
+      mobile: mobileEl.value,
+      address: addressEl.value,
+      summary: summaryEl.value,
+      avatar: avatar.src,
+      template: templateSel.value,
+      accent: accentInput.value,
+      font: fontSel.value,
+      skills: Array.from(skillsContainer.querySelectorAll('.skill-pill')).map(s=>s.textContent.trim()),
+      languages: Array.from(langsContainer.querySelectorAll('.lang-item')).map(l=>l.textContent.trim()),
+      jobs: Array.from(jobsContainer.querySelectorAll('.job')).map(j=>({ role: j.querySelector('.job-role').value, duration: j.querySelector('.job-duration').value, desc: j.querySelector('.job-desc').value })),
+      edus: Array.from(edusContainer.querySelectorAll('.job')).map(e=>({ school: e.querySelector('.edu-school').value, duration: e.querySelector('.edu-duration').value, desc: e.querySelector('.edu-desc').value })),
+      projs: Array.from(projsContainer.querySelectorAll('.job')).map(p=>({ title: p.querySelector('.proj-title').value, tech: p.querySelector('.proj-tech').value, desc: p.querySelector('.proj-desc').value }))
+    };
+    localStorage.setItem('resume_builder_v2', JSON.stringify(state));
+    alert('Saved locally in your browser.');
+  }
+
+  function resetAll(){ if(!confirm('Reset the form? This will clear local data.')) return; localStorage.removeItem('resume_builder_v2'); location.reload(); }
+
+  // dynamic blocks: jobs/edu/proj
+  function createJob(role='', duration='', desc=''){
+    const tpl = qs('#jobTpl'); const node = tpl.content.cloneNode(true); const container = node.querySelector('.job');
+    container.querySelector('.job-role').value = role; container.querySelector('.job-duration').value = duration; container.querySelector('.job-desc').value = desc;
+    container.querySelector('.remove-job').addEventListener('click', ()=>{container.remove(); syncAll();});
+    jobsContainer.appendChild(container); attachJobListeners(); syncAll();
+  }
+  function createEdu(school='', duration='', desc=''){
+    const tpl = qs('#eduTpl'); const node = tpl.content.cloneNode(true); const container = node.querySelector('.job');
+    container.querySelector('.edu-school').value = school; container.querySelector('.edu-duration').value = duration; container.querySelector('.edu-desc').value = desc;
+    container.querySelector('.remove-edu').addEventListener('click', ()=>{container.remove(); syncAll();});
+    edusContainer.appendChild(container); attachEduListeners(); syncAll();
+  }
+  function createProj(title='', tech='', desc=''){
+    const tpl = qs('#projTpl'); const node = tpl.content.cloneNode(true); const container = node.querySelector('.job');
+    container.querySelector('.proj-title').value = title; container.querySelector('.proj-tech').value = tech; container.querySelector('.proj-desc').value = desc;
+    container.querySelector('.remove-proj').addEventListener('click', ()=>{container.remove(); syncAll();});
+    projsContainer.appendChild(container); attachProjListeners(); syncAll();
+  }
+
+  function attachJobListeners(){ jobsContainer.querySelectorAll('.job-role, .job-duration, .job-desc').forEach(i=> i.addEventListener('input', syncAll)); }
+  function attachEduListeners(){ edusContainer.querySelectorAll('.edu-school, .edu-duration, .edu-desc').forEach(i=> i.addEventListener('input', syncAll)); }
+  function attachProjListeners(){ projsContainer.querySelectorAll('.proj-title, .proj-tech, .proj-desc').forEach(i=> i.addEventListener('input', syncAll)); }
+
+  // skills
+  function addSkill(text){ if(!text) return; const el = document.createElement('span'); el.className='skill-pill'; el.textContent = text; const rem = document.createElement('button'); rem.className='btn btn-sm btn-link text-danger ms-1'; rem.innerHTML = "<i class='bx bx-x'></i>"; rem.style.padding='0 6px'; rem.addEventListener('click', ()=>{ el.remove(); syncAll(); }); el.appendChild(rem); skillsContainer.appendChild(el); syncAll(); }
+  addSkillBtn.addEventListener('click', ()=>{ const v = newSkillInput.value.trim(); if(!v) return; addSkill(v); newSkillInput.value=''; });
+
+  // languages
+  function addLang(text){ if(!text) return; const el = document.createElement('span'); el.className='lang-item'; el.textContent = text; const rem = document.createElement('button'); rem.className='btn btn-sm btn-link text-danger ms-1'; rem.innerHTML = "<i class='bx bx-x'></i>"; rem.style.padding='0 6px'; rem.addEventListener('click', ()=>{ el.remove(); syncAll(); }); el.appendChild(rem); langsContainer.appendChild(el); syncAll(); }
+  addLangBtn.addEventListener('click', ()=>{ const v = newLangInput.value.trim(); if(!v) return; addLang(v); newLangInput.value=''; });
+
+  // populate default languages
+  ['Telugu','English','Hindi'].forEach(l=> addLang(l));
+
+  // sync preview across templates
+  function syncAll(){
+    // classes
+    preview.classList.toggle('template-modern', templateSel.value === 'modern');
+    preview.classList.toggle('template-classic', templateSel.value === 'classic');
+    preview.classList.toggle('template-sidebar', templateSel.value === 'sidebar');
+    preview.classList.toggle('template-twocol', templateSel.value === 'twocol');
+
+    // accent
+    document.documentElement.style.setProperty('--accent', accentInput.value);
+
+    // load font
+    loadFont(fontSel.value);
+
+    // basic fields
+    pName.textContent = nameEl.value || 'Jane Doe';
+    pTitle.textContent = titleEl.value || 'Frontend Developer';
+    pSummary.textContent = summaryEl.value || 'A concise summary that highlights your experience, strengths and goals.';
+
+    // contact
+    pMeta.innerHTML = '';
+    if(emailEl.value) pMeta.appendChild(makeContact('bx bx-envelope', emailEl.value));
+    if(mobileEl.value) pMeta.appendChild(makeContact('bx bx-mobile', mobileEl.value));
+    if(addressEl.value) pMeta.appendChild(makeContact('bx bx-map', addressEl.value));
+
+    // single preview main sections
+    renderList(Array.from(jobsContainer.querySelectorAll('.job')).map(j=>({ role: j.querySelector('.job-role').value, duration: j.querySelector('.job-duration').value, desc: j.querySelector('.job-desc').value })), pJobs);
+    renderList(Array.from(edusContainer.querySelectorAll('.job')).map(e=>({ school: e.querySelector('.edu-school').value, duration: e.querySelector('.edu-duration').value, desc: e.querySelector('.edu-desc').value })), pEdu, true);
+    renderProjList(Array.from(projsContainer.querySelectorAll('.job')).map(p=>({ title: p.querySelector('.proj-title').value, tech: p.querySelector('.proj-tech').value, desc: p.querySelector('.proj-desc').value })), pProj);
+
+    // skills
+    pSkills.innerHTML=''; Array.from(skillsContainer.querySelectorAll('.skill-pill')).forEach(s=>{ const c = document.createElement('div'); c.className='skill-pill'; c.textContent = s.textContent.replace('✕','').trim(); pSkills.appendChild(c); });
+
+    // languages
+    pLangs.innerHTML=''; Array.from(langsContainer.querySelectorAll('.lang-item')).forEach(l=>{ const c = document.createElement('div'); c.className='lang-item'; c.textContent = l.textContent.replace('✕','').trim(); pLangs.appendChild(c); });
+
+    // sidebar preview
+    sbAvatar.src = avatar.src; sbName.textContent = nameEl.value || 'Jane Doe'; sbTitle.textContent = titleEl.value || 'Frontend Developer'; sbSummary.textContent = pSummary.textContent;
+    sbMeta.innerHTML=''; if(emailEl.value) sbMeta.appendChild(makeSmall('Email: ' + emailEl.value)); if(mobileEl.value) sbMeta.appendChild(makeSmall('Phone: ' + mobileEl.value)); if(addressEl.value) sbMeta.appendChild(makeSmall('Address: ' + addressEl.value));
+    sbSkills.innerHTML=''; Array.from(skillsContainer.querySelectorAll('.skill-pill')).forEach(s=>{ const el=document.createElement('div'); el.className='skill-pill'; el.textContent=s.textContent.replace('✕','').trim(); sbSkills.appendChild(el); });
+    sbLangs.innerHTML=''; Array.from(langsContainer.querySelectorAll('.lang-item')).forEach(l=>{ const el=document.createElement('div'); el.className='lang-item'; el.textContent=l.textContent.replace('✕','').trim(); sbLangs.appendChild(el); });
+    sbJobs.innerHTML=''; renderListTo(sbJobs, Array.from(jobsContainer.querySelectorAll('.job')).map(j=>({ role: j.querySelector('.job-role').value, duration: j.querySelector('.job-duration').value, desc: j.querySelector('.job-desc').value })));
+    sbEdu.innerHTML=''; renderListTo(sbEdu, Array.from(edusContainer.querySelectorAll('.job')).map(e=>({ role: e.querySelector('.edu-school').value, duration: e.querySelector('.edu-duration').value, desc: e.querySelector('.edu-desc').value })));
+    sbProj.innerHTML=''; renderProjListTo(sbProj, Array.from(projsContainer.querySelectorAll('.job')).map(p=>({ title: p.querySelector('.proj-title').value, tech: p.querySelector('.proj-tech').value, desc: p.querySelector('.proj-desc').value })));
+
+    // twocol preview
+    tcAvatar.src = avatar.src; tcName.textContent = nameEl.value || 'Jane Doe'; tcTitle.textContent = titleEl.value || 'Frontend Developer'; tcSummary.textContent = pSummary.textContent;
+    tcSkills.innerHTML=''; Array.from(skillsContainer.querySelectorAll('.skill-pill')).forEach(s=>{ const el=document.createElement('div'); el.className='skill-pill'; el.textContent=s.textContent.replace('✕','').trim(); tcSkills.appendChild(el); });
+    tcLangs.innerHTML=''; Array.from(langsContainer.querySelectorAll('.lang-item')).forEach(l=>{ const el=document.createElement('div'); el.className='lang-item'; el.textContent=l.textContent.replace('✕','').trim(); tcLangs.appendChild(el); });
+    tcJobs.innerHTML=''; renderListTo(tcJobs, Array.from(jobsContainer.querySelectorAll('.job')).map(j=>({ role: j.querySelector('.job-role').value, duration: j.querySelector('.job-duration').value, desc: j.querySelector('.job-desc').value })));
+    tcEdu.innerHTML=''; renderListTo(tcEdu, Array.from(edusContainer.querySelectorAll('.job')).map(e=>({ role: e.querySelector('.edu-school').value, duration: e.querySelector('.edu-duration').value, desc: e.querySelector('.edu-desc').value })));
+    tcProj.innerHTML=''; renderProjListTo(tcProj, Array.from(projsContainer.querySelectorAll('.job')).map(p=>({ title: p.querySelector('.proj-title').value, tech: p.querySelector('.proj-tech').value, desc: p.querySelector('.proj-desc').value })));
+    tcMeta.innerHTML=''; if(emailEl.value) tcMeta.appendChild(makeSmall('Email: ' + emailEl.value + '<br>')); if(mobileEl.value) tcMeta.appendChild(makeSmall('Phone: ' + mobileEl.value + '<br>')); if(addressEl.value) tcMeta.appendChild(makeSmall(addressEl.value));
+
+    // show/hide previews
+    singlePreview.style.display = (templateSel.value === 'modern' || templateSel.value === 'classic') ? 'block' : 'none';
+    sidebarPreview.style.display = (templateSel.value === 'sidebar') ? 'grid' : 'none';
+    twocolPreview.style.display = (templateSel.value === 'twocol') ? 'grid' : 'none';
+  }
+
+  function makeContact(icon, text){ const d = document.createElement('div'); d.className='contact-item'; d.innerHTML = `<i class='${icon}'></i> ${text}`; return d; }
+  function makeSmall(txt){ const d=document.createElement('div'); d.className='small-muted'; d.innerHTML = txt; return d; }
+
+  function renderList(items, container, isEdu=false){ container.innerHTML=''; items.forEach(it=>{ if(isEdu){ if(!(it.school||it.desc)) return; const wrap=document.createElement('div'); wrap.className='section'; const h5=document.createElement('h5'); h5.textContent = it.school || 'Degree — Institution'; const small=document.createElement('div'); small.className='muted-small'; small.textContent = it.duration || ''; const p=document.createElement('div'); p.className='muted-small'; p.textContent = it.desc || ''; wrap.appendChild(h5); if(small.textContent) wrap.appendChild(small); if(p.textContent) wrap.appendChild(p); container.appendChild(wrap); } else { if(!(it.role||it.desc)) return; const wrap=document.createElement('div'); wrap.className='section'; const h5=document.createElement('h5'); h5.textContent = it.role || 'Role — Company'; const small=document.createElement('div'); small.className='muted-small'; small.textContent = it.duration || ''; const p=document.createElement('div'); p.className='muted-small'; p.textContent = it.desc || ''; wrap.appendChild(h5); if(small.textContent) wrap.appendChild(small); if(p.textContent) wrap.appendChild(p); container.appendChild(wrap); } }); }
+
+  function renderListTo(container, items){ items.forEach(it=>{ if(!(it.role||it.desc||it.school)) return; const wrap=document.createElement('div'); wrap.className='section'; const h5=document.createElement('h5'); h5.textContent = it.role || it.school || 'Item'; const small=document.createElement('div'); small.className='muted-small'; small.textContent = it.duration || ''; const p=document.createElement('div'); p.className='muted-small'; p.textContent = it.desc || ''; wrap.appendChild(h5); if(small.textContent) wrap.appendChild(small); if(p.textContent) wrap.appendChild(p); container.appendChild(wrap); }); }
+
+  function renderProjList(items, container){ container.innerHTML=''; items.forEach(it=>{ if(!(it.title||it.desc)) return; const wrap=document.createElement('div'); wrap.className='section'; const h5=document.createElement('h5'); h5.textContent = it.title || 'Project'; const small=document.createElement('div'); small.className='muted-small'; small.textContent = it.tech ? 'Tech: ' + it.tech : ''; const p=document.createElement('div'); p.className='muted-small'; p.textContent = it.desc || ''; wrap.appendChild(h5); if(small.textContent) wrap.appendChild(small); if(p.textContent) wrap.appendChild(p); container.appendChild(wrap); }); }
+  function renderProjListTo(container, items){ items.forEach(it=>{ if(!(it.title||it.desc)) return; const wrap=document.createElement('div'); wrap.className='section'; const h5=document.createElement('h5'); h5.textContent = it.title || 'Project'; const small=document.createElement('div'); small.className='muted-small'; small.textContent = it.tech ? 'Tech: ' + it.tech : ''; const p=document.createElement('div'); p.className='muted-small'; p.textContent = it.desc || ''; wrap.appendChild(h5); if(small.textContent) wrap.appendChild(small); if(p.textContent) wrap.appendChild(p); container.appendChild(wrap); }); }
+
+  // photo upload
+  photoInput.addEventListener('change', e=>{ const f = e.target.files[0]; if(!f) return; const reader = new FileReader(); reader.onload = ()=>{ avatar.src = reader.result; syncAll(); }; reader.readAsDataURL(f); });
+
+  // listeners
+  ['input','change'].forEach(evt=>{ [nameEl,titleEl,emailEl,mobileEl,addressEl,summaryEl].forEach(el=> el.addEventListener(evt, syncAll)); });
+  qs('#addJob').addEventListener('click', ()=> createJob());
+  qs('#addEdu').addEventListener('click', ()=> createEdu());
+  qs('#addProj').addEventListener('click', ()=> createProj());
+  qs('#saveBtn').addEventListener('click', saveState);
+  qs('#loadBtn').addEventListener('click', ()=>{ loadState(); alert('Loaded saved data (if available).'); });
+  qs('#resetBtn').addEventListener('click', resetAll);
+
+  // export PDF
+  qs('#exportPdf').addEventListener('click', ()=>{
+    // choose which preview block to pass to pdf based on template
+    let el;
+    if(templateSel.value === 'sidebar') el = sidebarPreview;
+    else if(templateSel.value === 'twocol') el = twocolPreview;
+    else el = singlePreview;
+    const clone = el.cloneNode(true);
+    clone.style.margin = '0';
+    const wrapper = document.createElement('div'); wrapper.style.padding='10px'; wrapper.appendChild(clone);
+    const opt = { margin:0.4, filename: (nameEl.value||'resume') + '.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale:2 }, jsPDF: { unit:'in', format:'a4', orientation:'portrait' } };
+    html2pdf().set(opt).from(wrapper).save();
+  });
+
+  // template & theme handlers
+  accentInput.addEventListener('input', ()=>{ document.documentElement.style.setProperty('--accent', accentInput.value); });
+  templateSel.addEventListener('change', syncAll);
+  fontSel.addEventListener('change', ()=>{ loadFont(fontSel.value); syncAll(); });
+
+  // dynamic font loader
+  function loadFont(name){ const family = name.replace(/\+/g, ' '); if(document.getElementById('font-' + name)) { document.body.style.fontFamily = family + ', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial'; return; } const link = document.createElement('link'); link.rel='stylesheet'; link.id='font-' + name; link.href = 'https://fonts.googleapis.com/css2?family=' + name + ':wght@300;400;600;700&display=swap'; document.head.appendChild(link); document.body.style.fontFamily = family + ', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial'; }
+
+  // initial content
+  createJob('Senior Frontend Developer — Acme Corp','2020 - Present','Built responsive UI, mentored junior devs, improved performance.');
+  createEdu('B.Sc. Computer Science — University','2016 - 2020','Graduated with honors.');
+  createProj('Portfolio Website','HTML, CSS, JS','Designed & implemented a responsive portfolio that increased traffic.');
+  addSkill('HTML'); addSkill('CSS'); addSkill('JavaScript'); addSkill('React');
+  // preloaded languages already added earlier
+
+  // attempt load saved (overrides defaults if present)
+  loadState();
+  syncAll();
+
+  // expose for debugging
+  window._resumeBuilder = { syncAll, createJob, createEdu, createProj, addSkill, addLang, saveState, loadState };
+</script>
+</body>
+</html>
